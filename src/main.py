@@ -2,29 +2,34 @@ from selenium_driver import driver
 from slack_client import client
 import time
 
-driver.get("https://www.bestbuy.ca/en-ca/product/insignia-portable-air-conditioner-12000-btu-white-grey-only-at-best-buy/11794998")
+url = "https://www.bestbuy.com/site/evga-geforce-rtx-3080-xc3-ultra-gaming-10gb-gddr6-pci-express-4-0-graphics-card" \
+      "/6432400.p?skuId=6432400 "
+driver.get(url)
 
-def isAvailableText(driver):
-    e = driver.find_element_by_css_selector('.storeAvailabilityContainer_1Ez2A > div > span')
+
+def is_available_text(driver):
+    e = driver.find_element_by_css_selector('.fulfillment-add-to-cart-button > div > div > button')
     return e.text
 
-def checkWebsite():
+
+def check_website():
     print('refreshing...')
     driver.refresh()
     try:
-        availableText = isAvailableText(driver)
-        if availableText == 'Unavailable for store pickup':
-            text_to_send = availableText
+        available_text = is_available_text(driver)
+        if available_text == 'Sold Out':
+            message = 'Product Sold Out: \n' + url
         else:
-            text_to_send = availableText + ' ' + '<@U01S9G3ANMA>'
+            message = '<@U027KMC0S57> Product In Stock: \n' + url
+            client.chat_postMessage(channel='#bottest1', text=message)
     except Exception as e:
-        text_to_send = str(e)
+        message = str(e)
 
-    client.chat_postMessage(channel='#bottest1', text=text_to_send)
-    print('sent a message: ' + text_to_send)
+    print('Message: ' + message)
+
 
 while True:
-    checkWebsite()
+    check_website()
     # This used to run every 5 minutes.
     # I modified it to run every 60 minutes.
     waited = 0
